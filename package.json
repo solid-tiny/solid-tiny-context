@@ -13,6 +13,7 @@
     "lint": "npx ultracite lint",
     "lint:fix": "npx ultracite format",
     "release": "commit-and-tag-version -i CHANGELOG.md --same-file",
+    "pub": "git push --follow-tags && pnpm publish",
     "prepare": "husky"
   },
   "keywords": [],
