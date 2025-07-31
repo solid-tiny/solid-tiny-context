@@ -6,6 +6,8 @@ import { render } from 'solid-js/web';
 
 import './index.css';
 import 'uno.css';
+import { defineGlobalStore, enableGlobalStore } from '../define-global-state';
+import { Layout } from './layout';
 
 const root = document.querySelector('#root');
 
@@ -15,5 +17,40 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
-// biome-ignore lint/style/noNonNullAssertion: it must be an HTMLElement
-render(() => <Router>{routes}</Router>, root!);
+const globalState = defineGlobalStore('globalState', {
+  state: () => ({
+    count: 0,
+    message: 'Hello, SolidJS!',
+  }),
+  methods: {
+    increment() {
+      this.actions.setState('count', (prev) => prev + 1);
+    },
+    hello() {
+      this.actions.setState('message', (prev) =>
+        prev === 'Hello, world' ? 'Hello, SolidJS!' : 'Hello, world'
+      );
+    },
+  },
+  persist: 'localStorage',
+});
+
+export function useGlobalState() {
+  return globalState;
+}
+
+render(
+  () => (
+    <Router
+      root={(props) => {
+        return <Layout>{props.children}</Layout>;
+      }}
+    >
+      {routes}
+    </Router>
+  ),
+  // biome-ignore lint/style/noNonNullAssertion: it must be an HTMLElement
+  root!
+);
+
+enableGlobalStore();

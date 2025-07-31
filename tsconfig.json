@@ -6,9 +6,6 @@
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "node",
-    "paths": {
-      "@/*": ["src/*"]
-    },
     "types": ["vite/client", "vite-plugin-solid-pages/client"],
     "strict": true,
     "noEmit": true,

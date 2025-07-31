@@ -104,4 +104,4 @@ function enableGlobalStore() {
   });
 }
 
-export { defineGlobalStore, type enableGlobalStore };
+export { defineGlobalStore, enableGlobalStore };

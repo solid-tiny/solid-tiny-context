@@ -18,7 +18,8 @@ export type RealState<T, G extends Getters, M> = [
 ];
 
 export interface Getters {
-  [key: string]: <T>(prev: T) => T;
+  // biome-ignore lint/suspicious/noExplicitAny: should be any
+  [key: string]: (prev?: any) => any;
 }
 
 export interface RealContextThis<T, U, G extends Getters, M> {

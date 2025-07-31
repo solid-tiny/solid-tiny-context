@@ -32,5 +32,6 @@
     "source.fixAll.biome": "explicit",
     "source.organizeImports.biome": "explicit"
   },
+  "typescript.preferences.importModuleSpecifier": "relative",
   "cSpell.words": ["ultracite"]
 }
