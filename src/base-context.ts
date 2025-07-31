@@ -140,15 +140,17 @@ export function buildContext<
       }
 
       // 4. return context provider
-      const Provider = ({ children }: { children?: JSX.Element }) =>
-        createComponent(context.Provider, {
-          value,
-          get children() {
-            return children;
-          },
-        });
-
-      return { Provider, value };
+      return {
+        Provider(props: { children?: JSX.Element }) {
+          return createComponent(context.Provider, {
+            value,
+            get children() {
+              return props.children;
+            },
+          });
+        },
+        value,
+      };
     },
     defaultValue: params.state,
   };
