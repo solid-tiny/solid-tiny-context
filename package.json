@@ -11,10 +11,11 @@
     "build": "tsup",
     "dev": "vite",
     "lint": "npx ultracite lint",
+    "test": "vitest run",
     "lint:fix": "npx ultracite format",
-    "release": "commit-and-tag-version -i CHANGELOG.md --same-file",
-    "pub": "git push --follow-tags && pnpm build && pnpm publish",
-    "prepare": "husky"
+    "bump": "bumpp --no-push",
+    "push": "git push --follow-tags",
+    "prepublish": "pnpm test && pnpm build"
   },
   "keywords": [],
   "author": "",
@@ -25,17 +26,16 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
-    "@commitlint/cli": "^19.8.1",
-    "@commitlint/config-conventional": "^19.8.1",
     "@solidjs/router": "^0.15.3",
-    "commit-and-tag-version": "^12.5.1",
+    "bumpp": "^10.2.3",
     "husky": "^9.1.7",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "ultracite": "5.1.2",
     "unocss": "^66.3.3",
     "vite": "^6.2.1",
-    "vite-plugin-solid": "^2.11.0",
-    "vite-plugin-solid-pages": "^0.3.1"
+    "vite-plugin-solid": "^2.11.8",
+    "vite-plugin-solid-pages": "^0.3.5",
+    "vitest": "^3.2.4"
   }
 }

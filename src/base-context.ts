@@ -129,6 +129,9 @@ export function buildContext<
         if (isFn(state)) {
           createWatch(state, (newValue) => {
             if (isUndefined(newValue)) {
+              // should fallback to default value when undefined
+              // biome-ignore lint/suspicious/noExplicitAny: it's safe here
+              value[1].setState(key as any, (params.state() as any)[key]);
               return;
             }
             if (value[0][key] !== newValue) {

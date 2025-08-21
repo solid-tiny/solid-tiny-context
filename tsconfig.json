@@ -9,6 +9,7 @@
     "types": ["vite/client", "vite-plugin-solid-pages/client"],
     "strict": true,
     "noEmit": true,
+    "strictNullChecks": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "isolatedModules": true
