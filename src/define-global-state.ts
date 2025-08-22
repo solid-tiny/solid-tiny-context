@@ -24,11 +24,10 @@ function setupPersistence<T extends object>(
 ) {
   type Stored = {
     state: Partial<T>;
-    ts: number;
   };
 
   const write = (data: Partial<T>) => {
-    const payload: Stored = { state: data, ts: Date.now() };
+    const payload: Stored = { state: data };
     storage.setItem(name, JSON.stringify(payload));
   };
 
@@ -72,14 +71,10 @@ function setupPersistence<T extends object>(
     }
     try {
       const incoming = JSON.parse(e.newValue) as Stored;
-      const current = read();
 
-      // only update if incoming is newer
-      if (!current || incoming.ts > current.ts) {
-        batch(() => {
-          actions.setState(incoming.state);
-        });
-      }
+      batch(() => {
+        actions.setState(incoming.state);
+      });
     } catch {
       // do nothing
     }

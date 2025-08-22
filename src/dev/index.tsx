@@ -32,7 +32,7 @@ const globalState = defineGlobalStore('globalState', {
       );
     },
   },
-  persist: 'localStorage',
+  persist: 'sessionStorage',
 });
 
 export function useGlobalState() {
