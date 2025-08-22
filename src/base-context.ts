@@ -1,4 +1,5 @@
 import {
+  type Accessor,
   batch,
   createComponent,
   createContext,
@@ -7,6 +8,7 @@ import {
   useContext,
 } from 'solid-js';
 import { createStore } from 'solid-js/store';
+import { access, createWatch, isFn } from 'solid-tiny-utils';
 import type {
   Getters,
   MaybeSignals,
@@ -14,9 +16,7 @@ import type {
   RealContextThis,
   RealState,
 } from './types';
-import { access } from './utils/access';
-import { createWatch } from './utils/effect';
-import { isDef, isFn, isUndefined } from './utils/is';
+import { isUndefined } from './utils/is';
 import type { EmptyObject, Fn } from './utils/types';
 
 /**
@@ -29,8 +29,8 @@ function addGetter(
 ) {
   Object.defineProperty(obj, propName, {
     get: getterFunction,
-    enumerable: false, // 属性是否可枚举
-    configurable: true, // 属性是否可配置
+    enumerable: false,
+    configurable: true,
   });
 }
 
@@ -108,7 +108,7 @@ export function buildContext<
       const resolvedInitialState = Object.entries(initialState || {}).reduce(
         (acc, [key, state]) => {
           const realValue = access(state);
-          if (isDef(realValue)) {
+          if (!isUndefined(realValue)) {
             acc[key] = realValue;
           }
           return acc;
@@ -127,7 +127,7 @@ export function buildContext<
       // 3. if provided reactive initial state, create watch
       for (const [key, state] of Object.entries(initialState || {})) {
         if (isFn(state)) {
-          createWatch(state, (newValue) => {
+          createWatch(state as Accessor<unknown>, (newValue) => {
             if (isUndefined(newValue)) {
               // should fallback to default value when undefined
               // biome-ignore lint/suspicious/noExplicitAny: it's safe here

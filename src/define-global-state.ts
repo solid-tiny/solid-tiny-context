@@ -1,8 +1,8 @@
-import { createRoot } from 'solid-js';
+import { batch, createRoot } from 'solid-js';
 import { isServer } from 'solid-js/web';
+import { createDebouncedWatch } from 'solid-tiny-utils';
 import { buildRealState } from './base-context';
 import type { Getters, Methods, RealContextThis } from './types';
-import { createWatch } from './utils/effect';
 import type { EmptyObject } from './utils/types';
 
 export function getBrowserApi<T extends keyof Window>(
@@ -20,50 +20,70 @@ function setupPersistence<T extends object>(
   name: string,
   storage: Storage,
   state: T,
-  actions: { setState: (key: keyof T, value: unknown) => void }
+  actions: { setState: (...arg: unknown[]) => void }
 ) {
-  // 恢复本地存储
+  type Stored = {
+    state: Partial<T>;
+    ts: number;
+  };
+
+  const write = (data: Partial<T>) => {
+    const payload: Stored = { state: data, ts: Date.now() };
+    storage.setItem(name, JSON.stringify(payload));
+  };
+
+  const read = (): Stored | null => {
+    const raw = storage.getItem(name);
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+  // restore localstorage to state
   const restore = () => {
-    const stored = storage.getItem(name);
+    const stored = read();
     if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        for (const [key, value] of Object.entries(parsed)) {
-          if (state[key as keyof T] !== value) {
-            actions.setState(key as keyof T, value);
-          }
-        }
-      } catch {
-        storage.setItem(name, JSON.stringify(state));
-      }
+      batch(() => {
+        actions.setState(stored.state);
+      });
+    } else {
+      write(state);
     }
   };
 
-  // watch 持久化
-  createWatch(
-    () => Object.keys(state),
+  restore();
+
+  createDebouncedWatch(
+    () => JSON.stringify(state),
     () => {
-      storage.setItem(name, JSON.stringify(state));
-    }
+      write(state);
+    },
+    { delay: 200 }
   );
 
   // 跨标签页同步
   window.addEventListener('storage', (e) => {
-    if (e.key === name && e.newValue) {
-      try {
-        const parsed = JSON.parse(e.newValue);
-        for (const [key, value] of Object.entries(parsed)) {
-          if (state[key as keyof T] !== value) {
-            actions.setState(key as keyof T, value);
-          }
-        }
-      } catch {
-        storage.setItem(name, JSON.stringify(state));
+    if (e.key !== name || !e.newValue) {
+      return;
+    }
+    try {
+      const incoming = JSON.parse(e.newValue) as Stored;
+      const current = read();
+
+      // only update if incoming is newer
+      if (!current || incoming.ts > current.ts) {
+        batch(() => {
+          actions.setState(incoming.state);
+        });
       }
+    } catch {
+      // do nothing
     }
   });
-
-  restore();
 }
 
 function defineGlobalStore<
@@ -96,6 +116,11 @@ function defineGlobalStore<
   });
 }
 
+/**
+ * !only run once
+ *
+ * run after rendered is suggested
+ */
 function enableGlobalStore() {
   createRoot(() => {
     for (const fn of shouldRun) {
