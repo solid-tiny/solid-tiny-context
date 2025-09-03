@@ -1,1 +1,4 @@
-export { buildContext as createComponentState } from './base-context';
+export {
+  buildContext as createComponentState,
+  buildRealState as createState,
+} from './base-context';
