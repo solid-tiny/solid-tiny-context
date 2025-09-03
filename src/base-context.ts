@@ -41,9 +41,9 @@ export function buildRealState<
   G extends Getters = EmptyObject,
 >(params: {
   state: () => T;
-  nowrapData?: U;
-  getters?: G;
-  methods?: M;
+  nowrapData?: () => U;
+  getters?: G & ThisType<Omit<RealContextThis<T, U, G, M>, 'actions'>>;
+  methods?: M & ThisType<RealContextThis<T, U, G, M>>;
 }): [...RealState<T, G, M>, U] {
   const { state, getters, methods, nowrapData } = params;
 
@@ -64,7 +64,10 @@ export function buildRealState<
   // register getters (merge createMemo)
   for (const [key, getterFn] of Object.entries(getters || {})) {
     realGetters[key] = createMemo((prev: unknown) =>
-      getterFn.call({ state: state2, nowrapData }, prev)
+      (getterFn as (p?: unknown) => unknown).call(
+        { state: state2, nowrapData: nowrapData?.() },
+        prev
+      )
     );
   }
 
@@ -81,7 +84,7 @@ export function buildRealState<
   // setState
   actions.setState = setState;
 
-  return [...realState, (nowrapData || {}) as U];
+  return [...realState, (nowrapData?.() || {}) as U];
 }
 
 export function buildContext<
@@ -119,7 +122,7 @@ export function buildContext<
       // 2. create realState
       const value = buildRealState({
         state: () => ({ ...params.state(), ...resolvedInitialState }) as T,
-        nowrapData: params.nowrapData?.(),
+        nowrapData: params.nowrapData,
         getters: params.getters,
         methods: params.methods,
       });
