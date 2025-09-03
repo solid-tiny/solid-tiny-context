@@ -90,7 +90,7 @@ function defineGlobalStore<
   name: string,
   params: {
     state: () => T;
-    nowrapData?: U;
+    nowrapData?: () => U;
     getters?: G & ThisType<Omit<RealContextThis<T, U, G, M>, 'actions'>>;
     methods?: M & ThisType<RealContextThis<T, U, G, M>>;
     persist?: 'sessionStorage' | 'localStorage';
