@@ -65,7 +65,7 @@ export function buildRealState<
   for (const [key, getterFn] of Object.entries(getters || {})) {
     realGetters[key] = createMemo((prev: unknown) =>
       (getterFn as (p?: unknown) => unknown).call(
-        { state: state2, nowrapData: nowrapData?.() },
+        { state: state2, nowrapData: nowrapData?.() || {} },
         prev
       )
     );
@@ -76,7 +76,10 @@ export function buildRealState<
     if (typeof methodFn === 'function') {
       actions[key] = (...args: unknown[]) =>
         batch(() =>
-          methodFn.call({ state: state2, actions, nowrapData }, ...args)
+          methodFn.call(
+            { state: state2, actions, nowrapData: nowrapData?.() || {} },
+            ...args
+          )
         );
     }
   }
